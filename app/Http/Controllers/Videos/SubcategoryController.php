@@ -18,7 +18,8 @@ class SubcategoryController extends BaseController
     {
         $i = 1;
         $subcategory = Subcategory::all();
-        return view('admin.subcategory.index', compact('subcategory', 'i'));
+//        return view('admin.subcategory.index', compact('subcategory', 'i'));
+        return $this->sendResponse(new SubcategoryResource($subcategory), 'All SubCategories.');
     }
 
     /**
@@ -72,9 +73,10 @@ class SubcategoryController extends BaseController
     /**
      * Display the specified resource.
      */
-    public function show(Subcategory $subcategory)
+    public function show($id)
     {
-        //
+        $subcategory = Subcategory::find($id);
+        return $this->sendResponse(new SubcategoryResource($subcategory), 'Video Saved.');
     }
 
     /**
