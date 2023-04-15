@@ -2,10 +2,9 @@
 
 namespace App\Http\Controllers\Videos;
 
-use App\Models\Category;
-use App\Models\Subcategory;
 use Validator;
 use App\Models\Videos;
+use App\Models\Category;
 use Illuminate\Http\Request;
 use App\Http\Resources\Videos as VideoResource;
 use App\Http\Controllers\Admin\BaseController as BaseController;
@@ -19,7 +18,11 @@ class VideosController extends BaseController
     {
         $i = 1;
         $videos = Videos::with('category')->with('subcategory')->get();
-        return view('admin.videos.index', compact('videos','i'));
+        if ($videos->isEmpty()) {
+            return response()->json(['error' => 'No Videos Found'], 404);
+        }
+//        return view('admin.videos.index', compact('videos','i'));
+        return $this->sendResponse(new VideoResource($videos), 'All Videos.');
     }
 
     /**
@@ -80,9 +83,10 @@ class VideosController extends BaseController
     /**
      * Display the specified resource.
      */
-    public function show(Videos $videos)
+    public function show($id)
     {
-        //
+        $videos = Videos::find($id);
+        return $this->sendResponse(new VideoResource($videos), 'Video Fetched.');
     }
 
     /**
@@ -109,8 +113,8 @@ class VideosController extends BaseController
             'description' => 'required',
             'url' => 'required',
             'status' => 'required',
-//            'category_id' => 'required|exists:categories,id',
-//            'subcategory_id' => 'required|exists:subcategories,id',
+            'category_id' => 'required|exists:categories,id',
+            'subcategory_id' => 'required|exists:subcategories,id',
             'image' => 'image|max:2048',
         ]);
 
@@ -123,8 +127,8 @@ class VideosController extends BaseController
         $video->description = $request->input('description');
         $video->url = $request->input('url');
         $video->status = $request->input('status');
-//        $video->category_id = $request->input('category_id');
-//        $video->subcategory_id = $request->input('subcategory_id');
+        $video->category_id = $request->input('category_id');
+        $video->subcategory_id = $request->input('subcategory_id');
 
         if ($image = $request->file('image')) {
             $destinationPath = 'images/';

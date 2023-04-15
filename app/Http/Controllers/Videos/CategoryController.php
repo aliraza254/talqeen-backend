@@ -16,9 +16,21 @@ class CategoryController extends BaseController
      */
     public function index()
     {
-        $i = 1;
-        $categories = Category::with('subcategories')->get();
-        return view('admin.category.index', compact('categories','i'));
+//        $i = 1;
+//        $categories = Category::with('subcategories')->get();
+//        return view('admin.category.index', compact('categories','i'));
+//        return $this->sendResponse(new CategoryResource($categories), 'All Categories.');
+        try {
+            $i = 1;
+            $categories = Category::with('subcategories')->get();
+            if ($categories->isEmpty()) {
+                throw new \Exception('No categories found.');
+            }
+            return $this->sendResponse(new CategoryResource($categories), 'All Categories.');
+        } catch (\Exception $e) {
+            return $this->sendError($e->getMessage(), [], 404);
+        }
+
     }
 
     /**
@@ -46,10 +58,6 @@ class CategoryController extends BaseController
         $category->name = $request->input('name');
         $category->slug = $request->input('name');
 
-        if ($request->has('parent') && $request->input('parent') !== null) {
-            $category->parent = $request->input('parent');
-        }
-
         if ($image = $request->file('image')) {
             $destinationPath = 'images/';
             $profileImage = date('YmdHis') . "." . $image->getClientOriginalExtension();
@@ -66,9 +74,10 @@ class CategoryController extends BaseController
     /**
      * Display the specified resource.
      */
-    public function show(Category $category)
+    public function show($id)
     {
-        //
+        $category = Category::find($id);
+        return $this->sendResponse(new CategoryResource($category), 'View Single Category.');
     }
 
     /**
@@ -90,7 +99,6 @@ class CategoryController extends BaseController
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required',
-            'status' => 'required',
         ]);
 
         if ($validator->fails()) {
@@ -99,7 +107,6 @@ class CategoryController extends BaseController
 
         $category->name = $request->input('name');
         $category->slug = $request->input('name');
-        $category->status = $request->input('status');
 
         if ($image = $request->file('image')) {
             $destinationPath = 'images/';
