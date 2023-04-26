@@ -21,7 +21,6 @@ class VideosController extends BaseController
         if ($videos->isEmpty()) {
             return response()->json(['error' => 'No Videos Found'], 404);
         }
-//        return view('admin.videos.index', compact('videos','i'));
         return $this->sendResponse(new VideoResource($videos), 'All Videos.');
     }
 
@@ -114,7 +113,6 @@ class VideosController extends BaseController
             'url' => 'required',
             'status' => 'required',
             'category_id' => 'required|exists:categories,id',
-            'subcategory_id' => 'required|exists:subcategories,id',
             'image' => 'image|max:2048',
         ]);
 
@@ -122,13 +120,13 @@ class VideosController extends BaseController
             return $this->sendError($validator->errors());
         }
 
+
         $video->name = $request->input('name');
         $video->slug = $request->input('name');
         $video->description = $request->input('description');
         $video->url = $request->input('url');
         $video->status = $request->input('status');
         $video->category_id = $request->input('category_id');
-        $video->subcategory_id = $request->input('subcategory_id');
 
         if ($image = $request->file('image')) {
             $destinationPath = 'images/';
@@ -148,10 +146,17 @@ class VideosController extends BaseController
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Videos $videos, $id)
+    public function destroy($id)
     {
-        $videos->destroy($id);
-        return $this->sendResponse(new VideoResource($videos), 'Video deleted successfully!');
+        $video = Videos::find($id);
+
+        if(!$video){
+            return $this->sendError('Video not found', 404);
+        }
+
+        $video->delete($id);
+        return $this->sendResponse(new VideoResource($video), 'Video deleted successfully!');
+
     }
 
 }

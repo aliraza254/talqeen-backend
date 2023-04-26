@@ -18,7 +18,9 @@ class SubcategoryController extends BaseController
     {
         $i = 1;
         $subcategory = Subcategory::all();
-//        return view('admin.subcategory.index', compact('subcategory', 'i'));
+        if ($subcategory->isEmpty()) {
+            return response()->json(['error' => 'No SubCategory Found'], 404);
+        }
         return $this->sendResponse(new SubcategoryResource($subcategory), 'All SubCategories.');
     }
 
@@ -67,7 +69,7 @@ class SubcategoryController extends BaseController
 
         $subcategory->save();
 
-        return $this->sendResponse(new SubcategoryResource($subcategory), 'Video Saved.');
+        return $this->sendResponse(new SubcategoryResource($subcategory), 'Subcategory Saved.');
     }
 
     /**
@@ -76,7 +78,7 @@ class SubcategoryController extends BaseController
     public function show($id)
     {
         $subcategory = Subcategory::find($id);
-        return $this->sendResponse(new SubcategoryResource($subcategory), 'Video Saved.');
+        return $this->sendResponse(new SubcategoryResource($subcategory), 'Subcategory Saved.');
     }
 
     /**
@@ -86,7 +88,7 @@ class SubcategoryController extends BaseController
     {
         $subcategory = Subcategory::find($id);
         if (!$subcategory) {
-            return redirect()->back()->withErrors(['message' => 'Video not found']);
+            return redirect()->back()->withErrors(['message' => 'Subcategory not found']);
         }
         return view('admin.category.edit', compact('subcategory', 'id'));
     }
@@ -98,7 +100,6 @@ class SubcategoryController extends BaseController
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required',
-            'status' => 'required',
         ]);
 
         if ($validator->fails()) {
@@ -107,7 +108,7 @@ class SubcategoryController extends BaseController
 
         $subcategory->name = $request->input('name');
         $subcategory->slug = $request->input('name');
-        $subcategory->status = $request->input('status');
+        $subcategory->category_id = $request->input('category_id');
 
         if ($image = $request->file('image')) {
             $destinationPath = 'images/';
@@ -120,15 +121,23 @@ class SubcategoryController extends BaseController
 
         $subcategory->save();
 
-        return $this->sendResponse(new SubcategoryResource($subcategory), 'Video updated successfully.');
+        return $this->sendResponse(new SubcategoryResource($subcategory), 'Subcategory updated successfully.');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Subcategory $subcategory, $id)
+    public function destroy($id)
     {
-        $subcategory->destroy($id);
-        return $this->sendResponse(new SubcategoryResource($subcategory), 'Video deleted successfully!');
+        $subcategory = Subcategory::find($id);
+        if (!$subcategory) {
+            return $this->sendError('Subcategory not found', 404);
+        }
+
+        $subcategory->delete($id);
+        return $this->sendResponse(new SubcategoryResource($subcategory), 'Subcategory deleted successfully!');
+
     }
+
+
 }

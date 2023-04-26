@@ -57,7 +57,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('videos');
-        Schema::dropIfExists('categories');
         Schema::dropIfExists('subcategories');
+        Schema::dropIfExists('categories');
     }
 };

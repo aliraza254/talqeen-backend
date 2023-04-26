@@ -125,9 +125,15 @@ class CategoryController extends BaseController
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Category $categories, $id)
+    public function destroy($id)
     {
-        $categories->destroy($id);
-        return $this->sendResponse(new CategoryResource($categories), 'Video deleted successfully!');
+        $category = Category::find($id);
+        if (!$category) {
+            return $this->sendError('Category not found', 404);
+        }
+
+        $category->delete($id);
+        return $this->sendResponse(new CategoryResource($category), 'Video deleted successfully!');
+
     }
 }
