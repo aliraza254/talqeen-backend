@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\Hash;
 use Validator;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -79,7 +80,7 @@ class UserController extends BaseController
         $user->name = $request->input('name');
         $user->email = $request->input('email');
         $user->role = $request->input('role');
-        $user->password = $request->input('password');
+        $user->password = Hash::make($request->input('password'));
 
         $user->save();
 
